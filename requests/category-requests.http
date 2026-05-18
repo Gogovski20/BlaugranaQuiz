@@ -1,0 +1,44 @@
+### Create category - Players
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+
+{
+  "name": "Players",
+  "description": "Questions about FC Barcelona players."
+}
+
+### Get all categories
+GET http://localhost:8080/api/categories
+
+### Get category by id
+GET http://localhost:8080/api/categories/1
+
+### Update category
+PUT http://localhost:8080/api/categories/1
+Content-Type: application/json
+
+{
+  "name": "Players",
+  "description": "Questions about legendary and current FC Barcelona players."
+}
+
+### Create duplicate category - should fail
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+
+{
+  "name": "players",
+  "description": "Duplicate test."
+}
+
+### Create invalid category - empty name
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "Invalid category."
+}
+
+### Delete category
+DELETE http://localhost:8080/api/categories/1
