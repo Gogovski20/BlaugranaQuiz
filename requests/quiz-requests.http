@@ -1,0 +1,39 @@
+### Start quiz
+POST http://127.0.0.1:8080/api/quizzes/start
+Content-Type: application/json
+
+{
+  "categoryId": 2,
+  "difficulty": "EASY",
+  "numberOfQuestions": 2
+}
+
+### Start quiz - invalid category
+POST http://127.0.0.1:8080/api/quizzes/start
+Content-Type: application/json
+
+{
+  "categoryId": 999999,
+  "difficulty": "EASY",
+  "numberOfQuestions": 1
+}
+
+### Start quiz - too many questions
+POST http://127.0.0.1:8080/api/quizzes/start
+Content-Type: application/json
+
+{
+  "categoryId": 2,
+  "difficulty": "EASY",
+  "numberOfQuestions": 20
+}
+
+### Start quiz - invalid number of questions
+POST http://127.0.0.1:8080/api/quizzes/start
+Content-Type: application/json
+
+{
+  "categoryId": 2,
+  "difficulty": "EASY",
+  "numberOfQuestions": 0
+}
