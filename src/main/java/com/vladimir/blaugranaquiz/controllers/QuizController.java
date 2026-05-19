@@ -2,6 +2,8 @@ package com.vladimir.blaugranaquiz.controllers;
 
 import com.vladimir.blaugranaquiz.dtos.StartQuizRequest;
 import com.vladimir.blaugranaquiz.dtos.StartQuizResponse;
+import com.vladimir.blaugranaquiz.dtos.SubmitQuizRequest;
+import com.vladimir.blaugranaquiz.dtos.SubmitQuizResponse;
 import com.vladimir.blaugranaquiz.services.QuizService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,5 +24,10 @@ public class QuizController {
     @PostMapping("/start")
     public StartQuizResponse startQuiz(@Valid @RequestBody StartQuizRequest request) {
         return quizService.startQuiz(request);
+    }
+
+    @PostMapping("/submit")
+    public SubmitQuizResponse submitQuiz(@Valid @RequestBody SubmitQuizRequest request) {
+        return quizService.submitQuiz(request);
     }
 }
