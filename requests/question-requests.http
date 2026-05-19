@@ -1,0 +1,58 @@
+### Create question
+POST http://127.0.0.1:8080/api/questions
+Content-Type: application/json
+
+{
+  "text": "Who is Barcelona's all time leading scorer?",
+  "difficulty": "EASY",
+  "explanation": "Lionel Messi is Barcelona's all time leading scorer with 700 goals.",
+  "categoryId": 2,
+  "answerOptions": [
+    {
+      "text": "Samuel Eto'o",
+      "correct": false
+    },
+    {
+      "text": "Luis Suarez",
+      "correct": false
+    },
+    {
+      "text": "Lionel Messi",
+      "correct": true
+    },
+    {
+      "text": "Neymar",
+      "correct": false
+    }
+  ]
+}
+
+### Get all questions
+GET http://127.0.0.1:8080/api/questions
+
+### Get question by id
+GET http://127.0.0.1:8080/api/questions/1
+
+### Get questions by category
+GET http://127.0.0.1:8080/api/questions/category/2
+
+### Create invalid question - two correct answers
+POST http://127.0.0.1:8080/api/questions
+Content-Type: application/json
+
+{
+  "text": "Invalid test question?",
+  "difficulty": "EASY",
+  "explanation": "Testing validation.",
+  "categoryId": 2,
+  "answerOptions": [
+    {
+      "text": "Option A",
+      "correct": true
+    },
+    {
+      "text": "Option B",
+      "correct": true
+    }
+  ]
+}
