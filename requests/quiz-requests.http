@@ -37,3 +37,56 @@ Content-Type: application/json
   "difficulty": "EASY",
   "numberOfQuestions": 0
 }
+
+### Submit quiz
+POST http://127.0.0.1:8080/api/quizzes/submit
+Content-Type: application/json
+
+{
+  "answers": [
+    {
+      "questionId": 1,
+      "selectedAnswerOptionId": 2
+    },
+    {
+      "questionId": 2,
+      "selectedAnswerOptionId": 7
+    }
+  ]
+}
+
+### Submit quiz - missing answers
+POST http://127.0.0.1:8080/api/quizzes/submit
+Content-Type: application/json
+
+{
+  "answers": []
+}
+
+### Submit quiz - invalid question
+POST http://127.0.0.1:8080/api/quizzes/submit
+Content-Type: application/json
+
+{
+  "answers": [
+    {
+      "questionId": 999999,
+      "selectedAnswerOptionId": 1
+    }
+  ]
+}
+
+
+### Submit quiz - invalid question
+POST http://127.0.0.1:8080/api/quizzes/submit
+Content-Type: application/json
+
+{
+  "answers": [
+    {
+      "questionId": 1,
+      "selectedAnswerOptionId": 8
+    }
+  ]
+}
+
