@@ -58,6 +58,8 @@ public class QuizService {
     }
 
     public SubmitQuizResponse submitQuiz(SubmitQuizRequest request) {
+        validateNoDuplicateQuestions(request);
+
         List<QuizAnswerResultResponse> results = request.getAnswers()
                 .stream()
                 .map(this::evaluateAnswer)
@@ -69,7 +71,7 @@ public class QuizService {
 
         int totalQuestions = results.size();
 
-        double percentage = ((double) score / totalQuestions) * 100;
+        double percentage = Math.round((((double) score / totalQuestions) * 100) * 100.0) / 100.0;
 
         return new SubmitQuizResponse(
                 score,
@@ -125,5 +127,17 @@ public class QuizService {
                 isCorrect,
                 question.getExplanation()
         );
+    }
+
+    private void validateNoDuplicateQuestions(SubmitQuizRequest request) {
+        long uniqueQuestionCount = request.getAnswers()
+                .stream()
+                .map(SubmitAnswerRequest::getQuestionId)
+                .distinct()
+                .count();
+
+        if (uniqueQuestionCount != request.getAnswers().size()) {
+            throw new IllegalArgumentException("Duplicate question submissions are not allowed.");
+        }
     }
 }
