@@ -1,9 +1,6 @@
 package com.vladimir.blaugranaquiz.services;
 
-import com.vladimir.blaugranaquiz.dtos.AnswerOptionRequest;
-import com.vladimir.blaugranaquiz.dtos.AnswerOptionResponse;
-import com.vladimir.blaugranaquiz.dtos.CreateQuestionRequest;
-import com.vladimir.blaugranaquiz.dtos.QuestionResponse;
+import com.vladimir.blaugranaquiz.dtos.*;
 import com.vladimir.blaugranaquiz.entities.AnswerOption;
 import com.vladimir.blaugranaquiz.entities.Category;
 import com.vladimir.blaugranaquiz.entities.Question;
@@ -54,7 +51,7 @@ public class QuestionService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
 
-        validateCorrectAnswerCount(request);
+        validateCorrectAnswerCount(request.getAnswerOptions());
 
         Question question = new Question();
         question.setText(request.getText().trim());
@@ -80,6 +77,40 @@ public class QuestionService {
         return mapToResponse(savedQuestion);
     }
 
+    public QuestionResponse updateQuestion(Long id, UpdateQuestionRequest request) {
+        Question question = questionRepository.findById((id))
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found."));
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found."));
+
+        validateCorrectAnswerCount(request.getAnswerOptions());
+
+        question.setText(request.getText().trim());
+        question.setDifficulty(request.getDifficulty());
+        question.setExplanation(request.getExplanation());
+        question.setCategory(category);
+
+        question.getAnswerOptions().clear();
+
+        List<AnswerOption> updatedOptions = request.getAnswerOptions()
+                .stream()
+                .map(optionRequest -> {
+                    AnswerOption option = new AnswerOption();
+                    option.setText(optionRequest.getText().trim());
+                    option.setCorrect(optionRequest.isCorrect());
+                    option.setQuestion(question);
+                    return option;
+                })
+                .toList();
+
+        question.getAnswerOptions().addAll(updatedOptions);
+
+        Question updatedQuestion = questionRepository.save(question);
+
+        return mapToResponse(updatedQuestion);
+    }
+
     public void deleteQuestion(Long id) {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found."));
@@ -87,8 +118,8 @@ public class QuestionService {
         questionRepository.delete(question);
     }
 
-    private void validateCorrectAnswerCount(CreateQuestionRequest request) {
-        long correctAnswersCount = request.getAnswerOptions()
+    private void validateCorrectAnswerCount(List<AnswerOptionRequest> answerOptions) {
+        long correctAnswersCount = answerOptions
                 .stream()
                 .filter(AnswerOptionRequest::isCorrect)
                 .count();

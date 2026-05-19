@@ -2,6 +2,7 @@ package com.vladimir.blaugranaquiz.controllers;
 
 import com.vladimir.blaugranaquiz.dtos.CreateQuestionRequest;
 import com.vladimir.blaugranaquiz.dtos.QuestionResponse;
+import com.vladimir.blaugranaquiz.dtos.UpdateQuestionRequest;
 import com.vladimir.blaugranaquiz.services.QuestionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,12 @@ public class QuestionController {
     @ResponseStatus(HttpStatus.CREATED)
     public QuestionResponse createQuestion(@Valid @RequestBody CreateQuestionRequest request) {
         return questionService.createQuestion(request);
+    }
+
+    @PutMapping("/{id}")
+    public QuestionResponse updateQuestion(@PathVariable Long id,
+                                           @Valid @RequestBody UpdateQuestionRequest request) {
+        return questionService.updateQuestion(id, request);
     }
 
     @DeleteMapping("/{id}")

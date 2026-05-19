@@ -27,6 +27,35 @@ Content-Type: application/json
   ]
 }
 
+### Update question
+PUT http://127.0.0.1:8080/api/questions/1
+Content-Type: application/json
+
+{
+  "text": "Who managed Barcelona during the 2008/09 treble-winning season?",
+  "difficulty": "EASY",
+  "explanation": "Pep Guardiola led Barcelona to La Liga, Copa del Rey, and Champions League titles in 2008/09.",
+  "categoryId": 2,
+  "answerOptions": [
+    {
+      "text": "Pep Guardiola",
+      "correct": true
+    },
+    {
+      "text": "Frank Rijkaard",
+      "correct": false
+    },
+    {
+      "text": "Ronald Koeman",
+      "correct": false
+    },
+    {
+      "text": "Johan Cruyff",
+      "correct": false
+    }
+  ]
+}
+
 ### Get all questions
 GET http://127.0.0.1:8080/api/questions
 
