@@ -3,27 +3,15 @@ POST http://127.0.0.1:8080/api/questions
 Content-Type: application/json
 
 {
-  "text": "Who is Barcelona's all time leading scorer?",
-  "difficulty": "EASY",
-  "explanation": "Lionel Messi is Barcelona's all time leading scorer with 700 goals.",
-  "categoryId": 2,
+  "text": "What is the approximate seating capacity of Camp Nou?",
+  "difficulty": "MEDIUM",
+  "explanation": "Camp Nou has a seating capacity of approximately 99,354, making it the largest stadium in Europe.",
+  "categoryId": 6,
   "answerOptions": [
-    {
-      "text": "Samuel Eto'o",
-      "correct": false
-    },
-    {
-      "text": "Luis Suarez",
-      "correct": false
-    },
-    {
-      "text": "Lionel Messi",
-      "correct": true
-    },
-    {
-      "text": "Neymar",
-      "correct": false
-    }
+    { "text": "75,000", "correct": false },
+    { "text": "85,000", "correct": false },
+    { "text": "99,354", "correct": true },
+    { "text": "110,000", "correct": false }
   ]
 }
 
@@ -32,27 +20,15 @@ PUT http://127.0.0.1:8080/api/questions/1
 Content-Type: application/json
 
 {
-  "text": "Who managed Barcelona during the 2008/09 treble-winning season?",
-  "difficulty": "EASY",
-  "explanation": "Pep Guardiola led Barcelona to La Liga, Copa del Rey, and Champions League titles in 2008/09.",
-  "categoryId": 2,
+  "text": "Who founded FC Barcelona?",
+  "difficulty": "MEDIUM",
+  "explanation": "Joan Gamper, a Swiss footballer, founded FC Barcelona in 1899 after posting an ad in a local sports magazine.",
+  "categoryId": 3,
   "answerOptions": [
-    {
-      "text": "Pep Guardiola",
-      "correct": true
-    },
-    {
-      "text": "Frank Rijkaard",
-      "correct": false
-    },
-    {
-      "text": "Ronald Koeman",
-      "correct": false
-    },
-    {
-      "text": "Johan Cruyff",
-      "correct": false
-    }
+    { "text": "Joan Gamper", "correct": true },
+    { "text": "Josep Sunyol", "correct": false },
+    { "text": "Narcís de Carreras", "correct": false },
+    { "text": "Agustí Montal", "correct": false }
   ]
 }
 

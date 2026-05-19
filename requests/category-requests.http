@@ -3,8 +3,8 @@ POST http://localhost:8080/api/categories
 Content-Type: application/json
 
 {
-  "name": "Players",
-  "description": "Questions about FC Barcelona players."
+  "name": "Stadium & Club",
+  "description": "Questions about Camp Nou and the club itself."
 }
 
 ### Get all categories
