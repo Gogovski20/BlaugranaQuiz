@@ -7,7 +7,7 @@ import type {
   SubmitQuizResponse,
 } from "../types/quiz";
 
-const API_BASE_URL = "http://127.0.0.1:8080/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function getCategories(): Promise<CategoryResponse[]> {
   const response = await axios.get<CategoryResponse[]>(

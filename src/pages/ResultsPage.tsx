@@ -1,33 +1,50 @@
 import { Link, useLocation } from "react-router-dom";
 import type { SubmitQuizResponse } from "../types/quiz";
+import { getSavedQuizResult, clearQuizStorage } from "../utils/quizStorage";
+import PageLayout from "../components/PageLayout";
+import Card from "../components/Card";
+import EmptyState from "../components/EmptyState";
 
 interface ResultsPageLocationState {
   result?: SubmitQuizResponse;
+}
+
+function getResultMessage(percentage: number): string {
+  if (percentage >= 90) {
+    return "Elite Barça knowledge.";
+  }
+
+  if (percentage >= 70) {
+    return "Strong performance.";
+  }
+
+  if (percentage >= 50) {
+    return "Good attempt.";
+  }
+
+  return "Keep learning and try again.";
 }
 
 export default function ResultsPage() {
   const location = useLocation();
 
   const state = location.state as ResultsPageLocationState | null;
-  const result = state?.result;
+  const result = state?.result || getSavedQuizResult();
 
   if (!result) {
-    return (
-      <main className="page">
-        <section className="card">
-          <h1>No Results Found</h1>
-          <p>You need to complete a quiz first.</p>
-          <Link to="/quiz/setup" className="button">
-            Start New Quiz
-          </Link>
-        </section>
-      </main>
+     return (
+      <EmptyState
+        title="No Results Found"
+        message="You need to complete a quiz first."
+        buttonText="Start New Quiz"
+        buttonTo="/quiz/setup"
+      />
     );
   }
 
   return (
-    <main className="page page-wide">
-      <section className="card quiz-card">
+    <PageLayout wide>
+      <Card wide>
         <h1>Quiz Results</h1>
 
         <div className="score-box">
@@ -35,6 +52,7 @@ export default function ResultsPage() {
             Score: {result.score} / {result.totalQuestions}
           </p>
           <p className="score-percentage">{result.percentage}%</p>
+          <p className="result-message">{getResultMessage(result.percentage)}</p>
         </div>
 
         <div className="question-list">
@@ -57,8 +75,7 @@ export default function ResultsPage() {
                 <strong>Correct answer:</strong> {answerResult.correctAnswer}
               </p>
 
-              <p>
-                <strong>Status:</strong>{" "}
+              <p className="result-status">
                 {answerResult.correct ? "Correct" : "Wrong"}
               </p>
 
@@ -70,11 +87,16 @@ export default function ResultsPage() {
             </article>
           ))}
         </div>
+        <div className="actions">
+          <Link to="/quiz/setup" className="button" onClick={clearQuizStorage}>
+            Play Again
+          </Link>
 
-        <Link to="/quiz/setup" className="button">
-          Play Again
-        </Link>
-      </section>
-    </main>
+          <Link to="/" className="button button-secondary">
+            Back Home
+          </Link>
+        </div>
+      </Card>
+    </PageLayout>
   );
 }

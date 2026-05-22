@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { submitQuiz } from "../api/quizApi";
 import type {
   QuizQuestionResponse,
   SubmitAnswerRequest,
 } from "../types/quiz";
-import axios from "axios";
+import { getSavedQuizQuestions,
+         getSavedSelectedAnswers,
+         saveQuizResult,
+         saveSelectedAnswers,
+       } from "../utils/quizStorage";
+import { getErrorMessage } from "../utils/errorUtils";
+import PageLayout from "../components/PageLayout";
+import Card from "../components/Card";
+import ErrorMessage from "../components/ErrorMessage";
+import EmptyState from "../components/EmptyState";
 
 interface QuizPageLocationState {
   questions?: QuizQuestionResponse[];
@@ -16,19 +25,27 @@ export default function QuizPage() {
   const navigate = useNavigate();
 
   const state = location.state as QuizPageLocationState | null;
-  const questions = state?.questions || [];
+  const questions = state?.questions || getSavedQuizQuestions();
 
-  const [selectedAnswers, setSelectedAnswers] = useState<
-    Record<number, number>
-  >({});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(
+    () => getSavedSelectedAnswers()
+  );
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const answeredCount = Object.keys(selectedAnswers).length;
+  const allQuestionsAnswered = answeredCount === questions.length;
 
   function handleSelectAnswer(questionId: number, answerOptionId: number) {
-    setSelectedAnswers((previous) => ({
-      ...previous,
-      [questionId]: answerOptionId,
-    }));
+    setSelectedAnswers((previous) => {
+      const updatedAnswers = {
+        ...previous,
+        [questionId]: answerOptionId,
+      };
+
+      saveSelectedAnswers(updatedAnswers);
+
+      return updatedAnswers;
+    });
   }
 
   async function handleSubmitQuiz() {
@@ -53,21 +70,15 @@ export default function QuizPage() {
 
       const response = await submitQuiz({ answers });
 
+      saveQuizResult(response);
+
       navigate("/results", {
         state: {
           result: response,
         },
       });
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          err.response?.data?.message ||
-          "Failed to submit quiz. Please try again.";
-
-        setError(message);
-      } else {
-        setError("Failed to submit quiz. Please try again.");
-      }
+      setError(getErrorMessage(err, "Failed to submit quiz. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -75,27 +86,28 @@ export default function QuizPage() {
 
   if (questions.length === 0) {
     return (
-      <main className="page">
-        <section className="card">
-          <h1>No Quiz Found</h1>
-          <p>You need to start a quiz first.</p>
-          <Link to="/quiz/setup" className="button">
-            Start New Quiz
-          </Link>
-        </section>
-      </main>
+      <EmptyState
+        title="No Quiz Found"
+        message="You need to start a quiz first."
+        buttonText="Start New Quiz"
+        buttonTo="/quiz/setup"
+      />
     );
   }
 
   return (
-    <main className="page page-wide">
-      <section className="card quiz-card">
+    <PageLayout wide>
+      <Card wide>
         <h1>Quiz</h1>
         <p>
           Answer all questions, then submit your quiz to see your result.
         </p>
 
-        {error && <p className="error-message">{error}</p>}
+        <ErrorMessage message={error} />
+
+        <p className="quiz-progress">
+          Answered {answeredCount} / {questions.length}
+        </p>
 
         <div className="question-list">
           {questions.map((question, index) => (
@@ -106,7 +118,9 @@ export default function QuizPage() {
 
               <div className="answer-list">
                 {question.answerOptions.map((option) => (
-                  <label key={option.id} className="answer-option">
+                  <label key={option.id} className={`answer-option ${
+                    selectedAnswers[question.id] === option.id ? "answer-option-selected" : ""
+                  }`}>
                     <input
                       type="radio"
                       name={`question-${question.id}`}
@@ -126,11 +140,15 @@ export default function QuizPage() {
         <button
           className="button"
           onClick={handleSubmitQuiz}
-          disabled={submitting}
+          disabled={submitting || !allQuestionsAnswered}
         >
-          {submitting ? "Submitting..." : "Submit Quiz"}
+          {submitting
+            ? "Submitting..."
+            : allQuestionsAnswered
+            ? "Submit Quiz"
+            : "Answer all questions"}
         </button>
-      </section>
-    </main>
+      </Card>
+    </PageLayout>
   );
 }

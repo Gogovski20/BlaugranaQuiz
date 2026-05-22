@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCategories, startQuiz } from "../api/quizApi";
 import type { CategoryResponse, Difficulty } from "../types/quiz";
-import axios from "axios";
+import { clearQuizStorage, saveQuizQuestions } from "../utils/quizStorage";
+import { getErrorMessage } from "../utils/errorUtils";
+import PageLayout from "../components/PageLayout";
+import Card from "../components/Card";
+import ErrorMessage from "../components/ErrorMessage";
+import LoadingState from "../components/LoadingState";
 
 const difficulties: Difficulty[] = ["EASY", "MEDIUM", "HARD", "EXPERT"];
 
@@ -30,8 +35,8 @@ export default function QuizSetupPage() {
         if (data.length > 0) {
           setSelectedCategoryId(data[0].id);
         }
-      } catch {
-        setError("Failed to load categories. Make sure the backend is running.");
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load categories. Make sure the backend is running."));
       } finally {
         setLoadingCategories(false);
       }
@@ -56,21 +61,21 @@ export default function QuizSetupPage() {
         numberOfQuestions,
       });
 
+      clearQuizStorage();
+      saveQuizQuestions(response.questions);
+
       navigate("/quiz/play", {
         state: {
           questions: response.questions,
         },
       });
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          err.response?.data?.message ||
-          "Failed to start quiz. Please try different options.";
-
-        setError(message);
-      } else {
-        setError("Failed to start quiz. Please try again.");
-      }
+      setError(
+        getErrorMessage(
+          err,
+          "Failed to start quiz. Please try different options."
+        )
+      );
     } finally {
       setStartingQuiz(false);
     }
@@ -78,22 +83,20 @@ export default function QuizSetupPage() {
 
   if (loadingCategories) {
     return (
-      <main className="page">
-        <section className="card">
-          <h1>Loading quiz setup...</h1>
-          <p>Please wait while categories are loaded.</p>
-        </section>
-      </main>
+      <LoadingState
+        title="Loading quiz setup..."
+        message="Please wait while categories are loaded."
+      />
     );
   }
 
   return (
-    <main className="page">
-      <section className="card">
+    <PageLayout>
+      <Card>
         <h1>Set Up Your Quiz</h1>
         <p>Choose a category, difficulty, and number of questions.</p>
 
-        {error && <p className="error-message">{error}</p>}
+        <ErrorMessage message={error} />
 
         <div className="form-group">
           <label htmlFor="category">Category</label>
@@ -137,6 +140,9 @@ export default function QuizSetupPage() {
             <option value={5}>5</option>
             <option value={10}>10</option>
           </select>
+          <p className="helper-text">
+            If there are not enough questions for your selection, the backend will show a clear message.
+          </p>
         </div>
 
         <button
@@ -146,7 +152,7 @@ export default function QuizSetupPage() {
         >
           {startingQuiz ? "Starting..." : "Start Quiz"}
         </button>
-      </section>
-    </main>
+      </Card>
+    </PageLayout>
   );
 }
