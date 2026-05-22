@@ -1,0 +1,63 @@
+### Create question
+POST http://127.0.0.1:8080/api/questions
+Content-Type: application/json
+
+{
+  "text": "What is the approximate seating capacity of Camp Nou?",
+  "difficulty": "MEDIUM",
+  "explanation": "Camp Nou has a seating capacity of approximately 99,354, making it the largest stadium in Europe.",
+  "categoryId": 6,
+  "answerOptions": [
+    { "text": "75,000", "correct": false },
+    { "text": "85,000", "correct": false },
+    { "text": "99,354", "correct": true },
+    { "text": "110,000", "correct": false }
+  ]
+}
+
+### Update question
+PUT http://127.0.0.1:8080/api/questions/1
+Content-Type: application/json
+
+{
+  "text": "Who founded FC Barcelona?",
+  "difficulty": "MEDIUM",
+  "explanation": "Joan Gamper, a Swiss footballer, founded FC Barcelona in 1899 after posting an ad in a local sports magazine.",
+  "categoryId": 3,
+  "answerOptions": [
+    { "text": "Joan Gamper", "correct": true },
+    { "text": "Josep Sunyol", "correct": false },
+    { "text": "Narcís de Carreras", "correct": false },
+    { "text": "Agustí Montal", "correct": false }
+  ]
+}
+
+### Get all questions
+GET http://127.0.0.1:8080/api/questions
+
+### Get question by id
+GET http://127.0.0.1:8080/api/questions/1
+
+### Get questions by category
+GET http://127.0.0.1:8080/api/questions/category/2
+
+### Create invalid question - two correct answers
+POST http://127.0.0.1:8080/api/questions
+Content-Type: application/json
+
+{
+  "text": "Invalid test question?",
+  "difficulty": "EASY",
+  "explanation": "Testing validation.",
+  "categoryId": 2,
+  "answerOptions": [
+    {
+      "text": "Option A",
+      "correct": true
+    },
+    {
+      "text": "Option B",
+      "correct": true
+    }
+  ]
+}
