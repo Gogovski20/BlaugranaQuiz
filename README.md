@@ -10,8 +10,6 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 
 ## Screenshots
 
-> Add screenshots to the `screenshots` folder using the exact file names below.
-
 ### Home Page
 
 ![Home Page](screenshots/01-home.png)
