@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "./apiClient";
 import type {
   CategoryResponse,
   StartQuizRequest,
@@ -7,21 +7,16 @@ import type {
   SubmitQuizResponse,
 } from "../types/quiz";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export async function getCategories(): Promise<CategoryResponse[]> {
-  const response = await axios.get<CategoryResponse[]>(
-    `${API_BASE_URL}/categories`
-  );
-
+  const response = await apiClient.get<CategoryResponse[]>("/categories");
   return response.data;
 }
 
 export async function startQuiz(
   request: StartQuizRequest
 ): Promise<StartQuizResponse> {
-  const response = await axios.post<StartQuizResponse>(
-    `${API_BASE_URL}/quizzes/start`,
+  const response = await apiClient.post<StartQuizResponse>(
+    "/quizzes/start",
     request
   );
 
@@ -31,8 +26,8 @@ export async function startQuiz(
 export async function submitQuiz(
   request: SubmitQuizRequest
 ): Promise<SubmitQuizResponse> {
-  const response = await axios.post<SubmitQuizResponse>(
-    `${API_BASE_URL}/quizzes/submit`,
+  const response = await apiClient.post<SubmitQuizResponse>(
+    "/quizzes/submit",
     request
   );
 
