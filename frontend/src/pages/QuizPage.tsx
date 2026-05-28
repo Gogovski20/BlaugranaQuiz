@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitQuiz } from "../api/quizApi";
+import Card from "../components/Card";
+import EmptyState from "../components/EmptyState";
+import ErrorMessage from "../components/ErrorMessage";
+import PageLayout from "../components/PageLayout";
 import type {
   QuizQuestionResponse,
   SubmitAnswerRequest,
 } from "../types/quiz";
-import { getSavedQuizQuestions,
-         getSavedSelectedAnswers,
-         saveQuizResult,
-         saveSelectedAnswers,
-       } from "../utils/quizStorage";
 import { getErrorMessage } from "../utils/errorUtils";
-import PageLayout from "../components/PageLayout";
-import Card from "../components/Card";
-import ErrorMessage from "../components/ErrorMessage";
-import EmptyState from "../components/EmptyState";
+import {
+  getSavedQuizQuestions,
+  getSavedSelectedAnswers,
+  saveQuizResult,
+  saveSelectedAnswers,
+} from "../utils/quizStorage";
 
 interface QuizPageLocationState {
   questions?: QuizQuestionResponse[];
@@ -30,8 +31,9 @@ export default function QuizPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(
     () => getSavedSelectedAnswers()
   );
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
   const answeredCount = Object.keys(selectedAnswers).length;
   const allQuestionsAnswered = answeredCount === questions.length;
 
@@ -86,12 +88,16 @@ export default function QuizPage() {
 
   if (questions.length === 0) {
     return (
-      <EmptyState
-        title="No Quiz Found"
-        message="You need to start a quiz first."
-        buttonText="Start New Quiz"
-        buttonTo="/quiz/setup"
-      />
+      <PageLayout>
+        <Card>
+          <EmptyState
+            title="No Quiz Found"
+            message="You need to start a quiz first."
+            buttonText="Start New Quiz"
+            buttonTo="/quiz/setup"
+          />
+        </Card>
+      </PageLayout>
     );
   }
 
@@ -99,9 +105,7 @@ export default function QuizPage() {
     <PageLayout wide>
       <Card wide>
         <h1>Quiz</h1>
-        <p>
-          Answer all questions, then submit your quiz to see your result.
-        </p>
+        <p>Answer all questions, then submit your quiz to see your result.</p>
 
         <ErrorMessage message={error} />
 
@@ -118,9 +122,14 @@ export default function QuizPage() {
 
               <div className="answer-list">
                 {question.answerOptions.map((option) => (
-                  <label key={option.id} className={`answer-option ${
-                    selectedAnswers[question.id] === option.id ? "answer-option-selected" : ""
-                  }`}>
+                  <label
+                    key={option.id}
+                    className={`answer-option ${
+                      selectedAnswers[question.id] === option.id
+                        ? "answer-option-selected"
+                        : ""
+                    }`}
+                  >
                     <input
                       type="radio"
                       name={`question-${question.id}`}

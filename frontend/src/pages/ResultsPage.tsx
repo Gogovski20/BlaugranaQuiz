@@ -1,9 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import type { SubmitQuizResponse } from "../types/quiz";
-import { getSavedQuizResult, clearQuizStorage } from "../utils/quizStorage";
-import PageLayout from "../components/PageLayout";
 import Card from "../components/Card";
 import EmptyState from "../components/EmptyState";
+import PageLayout from "../components/PageLayout";
+import type { SubmitQuizResponse } from "../types/quiz";
+import { clearQuizStorage, getSavedQuizResult } from "../utils/quizStorage";
 
 interface ResultsPageLocationState {
   result?: SubmitQuizResponse;
@@ -32,13 +32,17 @@ export default function ResultsPage() {
   const result = state?.result || getSavedQuizResult();
 
   if (!result) {
-     return (
-      <EmptyState
-        title="No Results Found"
-        message="You need to complete a quiz first."
-        buttonText="Start New Quiz"
-        buttonTo="/quiz/setup"
-      />
+    return (
+      <PageLayout>
+        <Card>
+          <EmptyState
+            title="No Results Found"
+            message="You need to complete a quiz first."
+            buttonText="Start New Quiz"
+            buttonTo="/quiz/setup"
+          />
+        </Card>
+      </PageLayout>
     );
   }
 
@@ -87,12 +91,13 @@ export default function ResultsPage() {
             </article>
           ))}
         </div>
+
         <div className="actions">
           <Link to="/quiz/setup" className="button" onClick={clearQuizStorage}>
             Play Again
           </Link>
 
-          <Link to="/" className="button button-secondary">
+          <Link to="/" className="button secondary-button">
             Back Home
           </Link>
         </div>

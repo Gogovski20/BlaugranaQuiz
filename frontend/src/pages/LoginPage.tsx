@@ -1,16 +1,25 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Card from "../components/Card";
+import ErrorMessage from "../components/ErrorMessage";
 import PageLayout from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import { getErrorMessage } from "../utils/errorUtils";
+
+interface LoginLocationState {
+  message?: string;
+  from?: string;
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
 
-  const successMessage = location.state?.message as string | undefined;
+  const locationState = location.state as LoginLocationState | null;
+
+  const successMessage = locationState?.message;
+  const redirectTo = locationState?.from || "/quiz/setup";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,9 +39,9 @@ export default function LoginPage() {
         password,
       });
 
-      navigate("/quiz/setup");
+      navigate(redirectTo, { replace: true });
     } catch (error) {
-      setError(getErrorMessage(error, "Error."));
+      setError(getErrorMessage(error, "Invalid email or password."));
     } finally {
       setSubmitting(false);
     }
@@ -45,7 +54,8 @@ export default function LoginPage() {
         <h1>Log in</h1>
 
         {successMessage && <p className="success-message">{successMessage}</p>}
-        {error && <p className="error-message">{error}</p>}
+
+        <ErrorMessage message={error} />
 
         <form onSubmit={handleSubmit} className="form">
           <label>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Card from "../components/Card";
+import ErrorMessage from "../components/ErrorMessage";
 import PageLayout from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import { getErrorMessage } from "../utils/errorUtils";
@@ -24,8 +25,8 @@ export default function RegisterPage() {
 
     try {
       const response = await register({
-        username,
-        email,
+        username: username.trim(),
+        email: email.trim(),
         password,
       });
 
@@ -35,7 +36,9 @@ export default function RegisterPage() {
         },
       });
     } catch (error) {
-      setError(getErrorMessage(error, "Error"));
+      setError(
+        getErrorMessage(error, "Failed to create account. Please try again.")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -47,7 +50,7 @@ export default function RegisterPage() {
         <p className="eyebrow">Create account</p>
         <h1>Register</h1>
 
-        {error && <p className="error-message">{error}</p>}
+        <ErrorMessage message={error} />
 
         <form onSubmit={handleSubmit} className="form">
           <label>
@@ -57,6 +60,8 @@ export default function RegisterPage() {
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               required
+              minLength={3}
+              maxLength={50}
             />
           </label>
 
@@ -67,6 +72,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
+              maxLength={150}
             />
           </label>
 
@@ -78,6 +84,7 @@ export default function RegisterPage() {
               onChange={(event) => setPassword(event.target.value)}
               required
               minLength={6}
+              maxLength={100}
             />
           </label>
 

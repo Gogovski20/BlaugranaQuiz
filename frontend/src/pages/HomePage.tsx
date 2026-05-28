@@ -4,7 +4,7 @@ import PageLayout from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
 
 export default function HomePage() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <PageLayout>
@@ -13,7 +13,7 @@ export default function HomePage() {
         <h1>BlaugranaQuiz</h1>
 
         {isAuthenticated && user ? (
-          <p className="hero-text">Logged in as {user.username}</p>
+          <p className="hero-text">Welcome back, {user.username}.</p>
         ) : (
           <p className="hero-text">
             Test your FC Barcelona knowledge with category-based football trivia,
@@ -33,22 +33,14 @@ export default function HomePage() {
             Start Quiz
           </Link>
 
-          {!isAuthenticated && (
-            <>
-              <Link to="/login" className="button secondary-button">
-                Log in
-              </Link>
-
-              <Link to="/register" className="button secondary-button">
-                Register
-              </Link>
-            </>
-          )}
-
-          {isAuthenticated && (
-            <button type="button" className="button secondary-button" onClick={logout}>
-              Logout
-            </button>
+          {isAuthenticated ? (
+            <Link to="/my-scores" className="button secondary-button">
+              View My Scores
+            </Link>
+          ) : (
+            <Link to="/login" className="button secondary-button">
+              Log in to save scores
+            </Link>
           )}
         </div>
       </Card>

@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import Card from "./Card";
-import PageLayout from "./PageLayout";
 
 interface EmptyStateProps {
   title: string;
@@ -16,14 +14,12 @@ export default function EmptyState({
   buttonTo,
 }: EmptyStateProps) {
   return (
-    <PageLayout>
-      <Card>
-        <h1>{title}</h1>
-        <p>{message}</p>
-        <Link to={buttonTo} className="button">
-          {buttonText}
-        </Link>
-      </Card>
-    </PageLayout>
+    <div className="empty-state">
+      <h1>{title}</h1>
+      <p>{message}</p>
+      <Link to={buttonTo} className="button">
+        {buttonText}
+      </Link>
+    </div>
   );
 }

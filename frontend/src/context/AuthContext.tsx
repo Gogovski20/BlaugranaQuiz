@@ -37,16 +37,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
   const [loading, setLoading] = useState(true);
 
-  const isAuthenticated = user !== null && token !== null;
+  const isAuthenticated = token !== null && user !== null;
 
   useEffect(() => {
     async function loadCurrentUser() {
       if (!token) {
+        setUser(null);
         setLoading(false);
         return;
       }
 
       try {
+        setLoading(true);
+
         const currentUser = await getCurrentUser();
         setUser(currentUser);
       } catch {
@@ -71,14 +74,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const response = await loginUser(request);
 
     localStorage.setItem("authToken", response.token);
-    setToken(response.token);
 
+    setToken(response.token);
     setUser({
       id: response.userId,
       username: response.username,
       email: response.email,
       role: response.role,
     });
+
+    setLoading(false);
 
     return response;
   }
@@ -87,6 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem("authToken");
     setToken(null);
     setUser(null);
+    setLoading(false);
   }
 
   return (
