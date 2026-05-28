@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/quizzes")
@@ -27,7 +28,8 @@ public class QuizController {
     }
 
     @PostMapping("/submit")
-    public SubmitQuizResponse submitQuiz(@Valid @RequestBody SubmitQuizRequest request) {
-        return quizService.submitQuiz(request);
+    public SubmitQuizResponse submitQuiz(@Valid @RequestBody SubmitQuizRequest request,
+                                         Authentication authentication) {
+        return quizService.submitQuiz(request, authentication);
     }
 }

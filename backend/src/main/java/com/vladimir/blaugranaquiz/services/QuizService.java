@@ -9,6 +9,9 @@ import com.vladimir.blaugranaquiz.repositories.CategoryRepository;
 import com.vladimir.blaugranaquiz.repositories.QuestionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import com.vladimir.blaugranaquiz.entities.Difficulty;
+import com.vladimir.blaugranaquiz.exceptions.BadRequestException;
+import org.springframework.security.core.Authentication;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,11 +25,13 @@ public class QuizService {
     private final QuestionRepository questionRepository;
     private final CategoryRepository categoryRepository;
     private final AnswerOptionRepository answerOptionRepository;
+    private final ScoreService scoreService;
 
-    public QuizService(QuestionRepository questionRepository, CategoryRepository categoryRepository, AnswerOptionRepository answerOptionRepository) {
+    public QuizService(QuestionRepository questionRepository, CategoryRepository categoryRepository, AnswerOptionRepository answerOptionRepository, ScoreService scoreService) {
         this.questionRepository = questionRepository;
         this.categoryRepository = categoryRepository;
         this.answerOptionRepository = answerOptionRepository;
+        this.scoreService = scoreService;
     }
 
     public StartQuizResponse startQuiz(StartQuizRequest request) {
@@ -57,8 +62,16 @@ public class QuizService {
         return new StartQuizResponse(selectedQuestions);
     }
 
-    public SubmitQuizResponse submitQuiz(SubmitQuizRequest request) {
+    public SubmitQuizResponse submitQuiz(SubmitQuizRequest request, Authentication authentication) {
         validateNoDuplicateQuestions(request);
+
+        Question firstQuestion = questionRepository.findById(request.getAnswers().getFirst().getQuestionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found."));
+
+        Long categoryId = firstQuestion.getCategory().getId();
+        Difficulty difficulty = firstQuestion.getDifficulty();
+
+        validateSameCategoryAndDifficulty(request, categoryId, difficulty);
 
         List<QuizAnswerResultResponse> results = request.getAnswers()
                 .stream()
@@ -72,6 +85,17 @@ public class QuizService {
         int totalQuestions = results.size();
 
         double percentage = Math.round((((double) score / totalQuestions) * 100) * 100.0) / 100.0;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            scoreService.saveScore(
+                    authentication.getName(),
+                    categoryId,
+                    difficulty,
+                    score,
+                    totalQuestions,
+                    percentage
+            );
+        }
 
         return new SubmitQuizResponse(
                 score,
@@ -138,6 +162,23 @@ public class QuizService {
 
         if (uniqueQuestionCount != request.getAnswers().size()) {
             throw new IllegalArgumentException("Duplicate question submissions are not allowed.");
+        }
+    }
+
+    private void validateSameCategoryAndDifficulty(SubmitQuizRequest request,
+                                                   Long categoryId,
+                                                   Difficulty difficulty) {
+        for (SubmitAnswerRequest answerRequest : request.getAnswers()) {
+            Question question = questionRepository.findById(answerRequest.getQuestionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Question not found."));
+
+            if (!question.getCategory().getId().equals(categoryId)) {
+                throw new BadRequestException("All submitted questions must belong to the same category.");
+            }
+
+            if (question.getDifficulty() != difficulty) {
+                throw new BadRequestException("All submitted questions must have the same difficulty.");
+            }
         }
     }
 }
