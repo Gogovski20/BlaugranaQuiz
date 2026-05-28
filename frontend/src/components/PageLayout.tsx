@@ -19,6 +19,7 @@ export default function PageLayout({ children, wide = false }: PageLayoutProps) 
         <nav className="app-nav">
           <Link to="/">Home</Link>
           <Link to="/quiz/setup">Start Quiz</Link>
+          <Link to="/leaderboard">Leaderboard</Link>
 
           {isAuthenticated && <Link to="/my-scores">My Scores</Link>}
 

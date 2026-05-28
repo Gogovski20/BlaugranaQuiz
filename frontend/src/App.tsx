@@ -6,6 +6,7 @@ import ResultsPage from "./pages/ResultsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import MyScoresPage from "./pages/MyScoresPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -18,6 +19,8 @@ export default function App() {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+
+      <Route path="/leaderboard" element={<LeaderboardPage />} />
 
       <Route
         path="/my-scores"
