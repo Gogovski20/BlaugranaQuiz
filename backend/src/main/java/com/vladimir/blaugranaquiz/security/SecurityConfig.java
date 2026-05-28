@@ -56,6 +56,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/quizzes/start").permitAll()
                         .requestMatchers("/api/quizzes/submit").permitAll()
 
+                        // Scores
+                        .requestMatchers("/api/scores/me").authenticated()
+                        .requestMatchers("/api/scores/leaderboard").permitAll()
+
                         // Admin category endpoints
                         .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasRole("ADMIN")
