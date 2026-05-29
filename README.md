@@ -2,9 +2,9 @@
 
 BlaugranaQuiz is a full-stack FC Barcelona trivia application built with **Spring Boot**, **PostgreSQL**, **React**, and **TypeScript**.
 
-Users can choose a quiz category, difficulty, and number of questions, play a multiple-choice quiz, submit answers, and review their score with correct answers and explanations.
+Users can register, log in, choose a quiz category, difficulty, and number of questions, play a multiple-choice quiz, submit answers, review their score with correct answers and explanations, save completed scores, and compare results through a leaderboard grouped by category and difficulty.
 
-The project was built as a portfolio application to practice Java/Spring Boot backend development, REST API design, PostgreSQL persistence, React frontend development, TypeScript, and full-stack integration.
+The project was built as a portfolio application to practice Java/Spring Boot backend development, REST API design, PostgreSQL persistence, JWT authentication, React frontend development, TypeScript, and full-stack integration.
 
 ---
 
@@ -14,23 +14,40 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 
 ![Home Page](screenshots/01-home.png)
 
+### Register Page
+
+![Register Page](screenshots/02-register.png)
+
+### Login Page
+
+![Login Page](screenshots/03-login.png)
+
 ### Quiz Setup
 
-![Quiz Setup](screenshots/02-quiz-setup.png)
+![Quiz Setup](screenshots/04-quiz-setup.png)
 
 ### Quiz Page
 
-![Quiz Page](screenshots/03-quiz-page.png)
+![Quiz Page](screenshots/05-quiz-page.png)
 
 ### Results Page
 
-![Results Page](screenshots/04-results.png)
+![Results Page](screenshots/06-results.png)
+
+### My Scores Page
+
+![My Scores Page](screenshots/07-my-scores.png)
+
+### Leaderboard Page
+
+![Leaderboard Page](screenshots/08-leaderboard.png)
 
 ### Swagger API Documentation
 
-![Swagger API Documentation](screenshots/05-swagger.png)
+![Swagger API Documentation](screenshots/09-swagger.png)
 
 ---
+
 
 ## Features
 
@@ -46,6 +63,47 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Show correct and wrong answers
 - Show answer explanations after submission
 - Persist quiz questions, selected answers, and results in local storage so refresh does not break the quiz flow
+- Allow guest users to play quizzes without an account
+
+### Authentication and Authorization
+
+- User registration
+- User login
+- JWT token generation
+- Password hashing with BCrypt
+- Authenticated frontend state
+- Persistent login using local storage
+- Automatic JWT attachment with Axios interceptors
+- Logout functionality
+- Protected user endpoints
+- Role-based authorization with `USER` and `ADMIN` roles
+- Admin-only access for category and question management endpoints
+
+### Score Tracking
+
+- Save score summaries for logged-in users
+- Guest users can play quizzes, but scores are not saved
+- Store score summary instead of full answer history
+- Personal score history page for authenticated users
+- Score records include:
+  - User
+  - Category
+  - Difficulty
+  - Score
+  - Total questions
+  - Percentage
+  - Completion time
+
+### Leaderboards
+
+- Public leaderboard page
+- Leaderboards grouped by category and difficulty
+- Top scores ranked fairly within the same quiz type
+- Ranking ordered by:
+  - Higher percentage
+  - Higher score
+  - Earlier completion time
+- Category and difficulty filters
 
 ### Backend Features
 
@@ -56,10 +114,17 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Question CRUD with answer options
 - Difficulty-based quiz generation
 - Quiz submission and scoring
+- JWT authentication
+- BCrypt password hashing
+- Role-based endpoint protection
+- Score storage for authenticated users
+- Personal score retrieval
+- Category/difficulty-based leaderboard retrieval
 - Global exception handling
 - Request validation
 - Seed data for initial quiz content
 - Swagger/OpenAPI documentation
+- Swagger JWT authorization support
 - CORS configuration for React frontend
 - Environment variables for database configuration
 
@@ -69,13 +134,22 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Vite development setup
 - React Router navigation
 - Axios API integration
+- Shared Axios client with JWT interceptor
+- Authentication context/provider
+- Register page
+- Login page
+- Logout functionality
+- Global navigation layout
 - Quiz setup page
 - Quiz play page
 - Results page
+- My Scores page
+- Leaderboard page
+- Protected route component
 - Reusable layout components
 - Error and loading states
-- Local storage persistence
-- Basic responsive UI
+- Local storage persistence for quiz flow and auth token
+- Responsive UI
 
 ---
 
@@ -86,10 +160,13 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Java 21
 - Spring Boot
 - Spring Web
+- Spring Security
 - Spring Data JPA
 - Hibernate
 - PostgreSQL
 - Bean Validation
+- JWT
+- BCrypt
 - Swagger/OpenAPI
 - Maven
 
@@ -109,6 +186,7 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - pgAdmin
 - Git
 - GitHub
+- Swagger UI
 
 ---
 
@@ -121,6 +199,17 @@ BlaugranaQuiz
 │   ├── requests
 │   ├── src
 │   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com/vladimir/blaugranaquiz
+│   │   │   │       ├── config
+│   │   │   │       ├── controllers
+│   │   │   │       ├── dtos
+│   │   │   │       ├── entities
+│   │   │   │       ├── exceptions
+│   │   │   │       ├── repositories
+│   │   │   │       ├── security
+│   │   │   │       └── services
+│   │   │   └── resources
 │   │   └── test
 │   ├── pom.xml
 │   ├── mvnw
@@ -130,7 +219,9 @@ BlaugranaQuiz
 │   ├── public
 │   ├── src
 │   │   ├── api
+│   │   ├── assets
 │   │   ├── components
+│   │   ├── context
 │   │   ├── pages
 │   │   ├── types
 │   │   └── utils
@@ -278,6 +369,14 @@ http://localhost:5173
 
 ## Main API Endpoints
 
+### Authentication
+
+```http
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+```
+
 ### Categories
 
 ```http
@@ -305,6 +404,108 @@ DELETE /api/questions/{id}
 POST /api/quizzes/start
 POST /api/quizzes/submit
 ```
+
+### Scores
+
+```http
+GET /api/scores/me
+GET /api/scores/leaderboard?categoryId={categoryId}&difficulty={difficulty}
+```
+
+---
+
+## Authentication Flow
+
+### 1. Register
+
+Request:
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+```
+
+Example body:
+
+```json
+{
+  "username": "test",
+  "email": "test@example.com",
+  "password": "Test123!"
+}
+```
+
+Example response:
+
+```json
+{
+  "userId": 1,
+  "username": "test",
+  "email": "test@example.com",
+  "role": "USER",
+  "message": "Registration successful. Please log in."
+}
+```
+
+Registration creates a new user account, but it does **not** return a JWT token. The user must log in after registration.
+
+---
+
+### 2. Login
+
+Request:
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+```
+
+Example body:
+
+```json
+{
+  "email": "test@example.com",
+  "password": "Test123!"
+}
+```
+
+Example response:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "userId": 1,
+  "username": "test",
+  "email": "test@example.com",
+  "role": "USER"
+}
+```
+
+The frontend stores the JWT token in local storage and automatically sends it with protected requests using an Axios interceptor.
+
+---
+
+### 3. Current User
+
+Request:
+
+```http
+GET /api/auth/me
+Authorization: Bearer JWT_TOKEN
+```
+
+Example response:
+
+```json
+{
+  "id": 1,
+  "username": "test",
+  "email": "test@example.com",
+  "role": "USER"
+}
+```
+
+This endpoint is used to restore authenticated frontend state after page refresh.
 
 ---
 
@@ -407,6 +608,121 @@ Example response:
 }
 ```
 
+If the user is authenticated, the backend saves a score summary after quiz submission.
+
+If the user is not authenticated, the quiz result is returned normally, but no score is saved.
+
+---
+
+## Score Tracking
+
+The backend stores score summaries for logged-in users.
+
+Instead of storing every selected answer, the app stores only the final quiz summary:
+
+```text
+Score
+- id
+- user_id
+- category_id
+- difficulty
+- score
+- total_questions
+- percentage
+- completed_at
+```
+
+This keeps the score history lightweight while still supporting personal score tracking and leaderboards.
+
+---
+
+### My Scores
+
+Request:
+
+```http
+GET /api/scores/me
+Authorization: Bearer JWT_TOKEN
+```
+
+Example response:
+
+```json
+[
+  {
+    "id": 1,
+    "username": "test",
+    "categoryId": 1,
+    "categoryName": "Players",
+    "difficulty": "EASY",
+    "score": 2,
+    "totalQuestions": 3,
+    "percentage": 66.67,
+    "completedAt": "2026-05-28T14:30:00"
+  }
+]
+```
+
+This endpoint is protected and returns only the scores of the currently logged-in user.
+
+---
+
+## Leaderboard
+
+Leaderboards are grouped by:
+
+```text
+category + difficulty
+```
+
+Example groups:
+
+```text
+Players - EASY
+Players - MEDIUM
+Players - HARD
+Players - EXPERT
+Club History - EASY
+Club History - MEDIUM
+Club History - HARD
+Club History - EXPERT
+```
+
+This prevents easy quiz scores and expert quiz scores from being compared unfairly.
+
+Request:
+
+```http
+GET /api/scores/leaderboard?categoryId=1&difficulty=EASY
+```
+
+Example response:
+
+```json
+[
+  {
+    "rank": 1,
+    "username": "test",
+    "categoryName": "Players",
+    "difficulty": "EASY",
+    "score": 3,
+    "totalQuestions": 3,
+    "percentage": 100.0,
+    "completedAt": "2026-05-28T14:35:00"
+  }
+]
+```
+
+Ranking order:
+
+```text
+1. Higher percentage
+2. Higher score
+3. Earlier completion time
+```
+
+The leaderboard endpoint is public, so both guests and logged-in users can view it.
+
 ---
 
 ## Error Handling
@@ -429,119 +745,91 @@ Handled cases include:
 - Question not found
 - Duplicate category
 - Invalid request body
+- Invalid email or password
+- Username already taken
+- Email already registered
 - Not enough questions for selected quiz options
 - Selected answer option does not belong to the submitted question
 - Duplicate question submissions
+- Submitted questions from different categories
+- Submitted questions with different difficulties
+- Unauthorized access to protected endpoints
+- Forbidden access to admin-only endpoints
 
 ---
 
 ## Local Storage Usage
 
-The frontend uses local storage to persist temporary quiz state:
+The frontend uses local storage to persist temporary quiz and authentication state:
 
+- JWT token
 - Started quiz questions
 - Selected answers
 - Quiz result
 
-This allows the user to refresh `/quiz/play` or `/results` without losing the current quiz state.
+This allows the user to:
 
-This is temporary client-side persistence. Future versions can move completed score storage to the backend.
+- Stay logged in after refreshing the page
+- Refresh `/quiz/play` without losing the current quiz
+- Refresh `/results` without losing the latest quiz result
+
+Completed score summaries are stored in the backend for authenticated users.
 
 ---
 
 ## Current Status
 
-The current version supports the full public quiz flow:
+The current version supports:
 
 ```text
+Register
+Login
+Logout
+JWT-authenticated frontend state
+Role-based backend authorization
+Admin-protected category/question management
 Choose category and difficulty
 Start quiz
 Answer questions
 Submit quiz
 Review score and explanations
+Save scores for logged-in users
+View personal score history
+View public leaderboards grouped by category and difficulty
 ```
-
-Authentication and score storage are planned next.
 
 ---
 
 ## Planned Features
 
-### JWT Authentication
+### Admin Dashboard
 
-Planned authentication features:
+Backend role-based authorization is already implemented, and category/question management endpoints are admin-protected.
 
-- User registration
-- User login
-- JWT token generation
-- Protected user endpoints
-- Authenticated frontend state
-- Logout functionality
+Future admin frontend features:
 
-### Score Storage
+- Admin-only dashboard
+- Admin category management UI
+- Admin question management UI
+- Role-aware frontend navigation
 
-Instead of storing every finished quiz in full detail, the next version will store score summaries for logged-in users.
+### Profile Improvements
 
-Possible `Score` entity:
+Possible user profile improvements:
 
-```text
-Score
-- id
-- user_id
-- category_id
-- difficulty
-- score
-- total_questions
-- percentage
-- completed_at
-```
+- Profile page for logged-in users
+- Basic user statistics
+- Best score by category
+- Total quizzes completed
+- Average score percentage
 
-This allows user score tracking without storing every selected answer.
+### Score Filtering
 
-### Leaderboards
+Possible score page improvements:
 
-Leaderboards should be grouped by:
-
-```text
-category + difficulty
-```
-
-Example:
-
-```text
-Players - EASY
-Players - MEDIUM
-Players - HARD
-Players - EXPERT
-Club History - EASY
-Club History - MEDIUM
-Club History - HARD
-Club History - EXPERT
-```
-
-This prevents EASY scores and EXPERT scores from being compared unfairly.
-
-Possible leaderboard fields:
-
-```text
-Rank
-Username
-Category
-Difficulty
-Score
-Total Questions
-Percentage
-Completed At
-```
-
-### Admin Features
-
-Future admin features:
-
-- Admin-only category management
-- Admin-only question management
-- Role-based authorization
-- Admin frontend dashboard
+- Filter personal scores by category
+- Filter personal scores by difficulty
+- Sort by newest, best score, or highest percentage
 
 ### Deployment
 
@@ -551,6 +839,7 @@ Future deployment improvements:
 - Backend deployment
 - Frontend deployment
 - Production database configuration
+- Production environment variables
 
 ---
 
@@ -559,14 +848,16 @@ Future deployment improvements:
 Recommended next phases:
 
 ```text
-1. Add JWT authentication
-2. Add user registration and login frontend pages
-3. Store score summaries for logged-in users
-4. Add personal scores page
-5. Add leaderboard grouped by category and difficulty
-6. Add admin role protection
-7. Add admin question/category management UI
-8. Add Docker and deployment configuration
+1. Add admin dashboard UI
+2. Add admin category management UI
+3. Add admin question management UI
+4. Improve My Scores filtering and sorting
+5. Add user profile/statistics page
+6. Add Docker configuration
+7. Deploy backend
+8. Deploy frontend
+9. Configure production PostgreSQL database
+10. Add automated backend and frontend tests
 ```
 
 ---
