@@ -4,7 +4,35 @@ BlaugranaQuiz is a full-stack FC Barcelona trivia application built with **Sprin
 
 Users can register, log in, choose a quiz category, difficulty, and number of questions, play a multiple-choice quiz, submit answers, review their score with correct answers and explanations, save completed scores, and compare results through a leaderboard grouped by category and difficulty.
 
-The project was built as a portfolio application to practice Java/Spring Boot backend development, REST API design, PostgreSQL persistence, JWT authentication, React frontend development, TypeScript, and full-stack integration.
+The project was built as a portfolio application to practice Java/Spring Boot backend development, REST API design, PostgreSQL persistence, JWT authentication, React frontend development, TypeScript, Docker, deployment, and full-stack integration.
+
+---
+
+## Live Demo
+
+Frontend: [https://blaugrana-quiz.vercel.app](https://blaugrana-quiz.vercel.app)
+
+Backend Swagger API: [https://blaugranaquiz.onrender.com/swagger-ui/index.html](https://blaugranaquiz.onrender.com/swagger-ui/index.html)
+
+---
+
+## Deployment
+
+The project is deployed with the following setup:
+
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** Supabase PostgreSQL
+- **Backend containerization:** Docker
+- **Production seed data:** `backend/seed-data.sql`
+
+The deployed frontend communicates with the deployed backend through:
+
+```env
+VITE_API_BASE_URL=https://blaugranaquiz.onrender.com/api
+```
+
+The backend uses environment variables for database connection, JWT security, and CORS configuration.
 
 ---
 
@@ -48,13 +76,17 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 
 ---
 
-
 ## Features
 
 ### Public Quiz Flow
 
 - Load quiz categories from the backend
 - Choose category, difficulty, and number of questions
+- Supported difficulties:
+  - Easy
+  - Medium
+  - Hard
+  - Expert
 - Start a quiz with randomly selected questions
 - Display answer options without exposing the correct answer
 - Select answers and track quiz progress
@@ -122,11 +154,12 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Category/difficulty-based leaderboard retrieval
 - Global exception handling
 - Request validation
-- Seed data for initial quiz content
+- Seed data for quiz content
 - Swagger/OpenAPI documentation
 - Swagger JWT authorization support
-- CORS configuration for React frontend
-- Environment variables for database configuration
+- CORS configuration for local and deployed React frontend
+- Environment variables for database, JWT, and frontend origin configuration
+- Dockerized backend for deployment
 
 ### Frontend Features
 
@@ -169,6 +202,7 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - BCrypt
 - Swagger/OpenAPI
 - Maven
+- Docker
 
 ### Frontend
 
@@ -179,6 +213,12 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Axios
 - CSS
 
+### Database and Deployment
+
+- Supabase PostgreSQL
+- Render
+- Vercel
+
 ### Tools
 
 - IntelliJ IDEA
@@ -187,6 +227,7 @@ The project was built as a portfolio application to practice Java/Spring Boot ba
 - Git
 - GitHub
 - Swagger UI
+- Docker Desktop
 
 ---
 
@@ -211,9 +252,11 @@ BlaugranaQuiz
 │   │   │   │       └── services
 │   │   │   └── resources
 │   │   └── test
+│   ├── Dockerfile
 │   ├── pom.xml
 │   ├── mvnw
-│   └── mvnw.cmd
+│   ├── mvnw.cmd
+│   └── seed-data.sql
 │
 ├── frontend
 │   ├── public
@@ -252,7 +295,7 @@ You can also create it manually through pgAdmin.
 
 ### 2. Configure Environment Variables
 
-The backend uses environment variables for database configuration.
+The backend uses environment variables for database configuration, JWT signing, and CORS.
 
 Set these variables in IntelliJ Run Configuration, your terminal, or your system environment:
 
@@ -260,16 +303,33 @@ Set these variables in IntelliJ Run Configuration, your terminal, or your system
 DB_URL=jdbc:postgresql://localhost:5432/blaugrana_quiz_db
 DB_USERNAME=postgres
 DB_PASSWORD=your_postgres_password
+JWT_SECRET=your_long_jwt_secret
+JWT_EXPIRATION_MS=86400000
+FRONTEND_URL=http://localhost:5173
 ```
 
-The backend `application.properties` should not contain a real database password.
+The backend `application.properties` should not contain a real database password or JWT secret.
 
 Example configuration:
 
 ```properties
+spring.application.name=blaugranaquiz
+
+server.port=${PORT:8080}
+
 spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/blaugrana_quiz_db}
 spring.datasource.username=${DB_USERNAME:postgres}
 spring.datasource.password=${DB_PASSWORD:postgres}
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+spring.jpa.open-in-view=false
+
+app.jwt.secret=${JWT_SECRET:}
+app.jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
+
+app.cors.allowed-origins=${FRONTEND_URL:http://localhost:5173}
 ```
 
 ---
@@ -349,6 +409,12 @@ VITE_API_BASE_URL=http://127.0.0.1:8080/api
 
 Do not commit the real `.env` file.
 
+For deployed backend testing, use:
+
+```env
+VITE_API_BASE_URL=https://blaugranaquiz.onrender.com/api
+```
+
 ---
 
 ### 3. Run Frontend
@@ -363,6 +429,172 @@ The frontend runs on:
 
 ```text
 http://localhost:5173
+```
+
+---
+
+## Docker Backend Setup
+
+The backend includes a Dockerfile located at:
+
+```text
+backend/Dockerfile
+```
+
+Build the Docker image:
+
+```bash
+cd backend
+docker build -t blaugrana-quiz-backend .
+```
+
+Run the backend container locally:
+
+```bash
+docker run --rm -p 8080:8080 --env-file .env.docker blaugrana-quiz-backend
+```
+
+Example `backend/.env.docker` file:
+
+```env
+DB_URL=jdbc:postgresql://host.docker.internal:5432/blaugrana_quiz_db
+DB_USERNAME=postgres
+DB_PASSWORD=your_local_postgres_password
+JWT_SECRET=your_long_jwt_secret
+JWT_EXPIRATION_MS=86400000
+FRONTEND_URL=http://localhost:5173
+```
+
+Do not commit `.env.docker`.
+
+---
+
+## Production Database Seed Data
+
+The production/demo seed script is located at:
+
+```text
+backend/seed-data.sql
+```
+
+This file inserts:
+
+- Categories
+- Questions
+- Answer options
+- Easy, Medium, Hard, and Expert difficulty questions
+- Validation queries
+
+To seed a database:
+
+1. Open Supabase SQL Editor, pgAdmin Query Tool, or `psql`.
+2. Paste and run the contents of:
+
+```text
+backend/seed-data.sql
+```
+
+The script is designed to be safe to run multiple times because it checks for existing categories, questions, and answer options before inserting duplicates.
+
+After running the seed file, the validation query should return no rows:
+
+```sql
+SELECT
+    q.id,
+    q.text,
+    q.difficulty,
+    c.name AS category,
+    COUNT(ao.id) AS option_count,
+    SUM(CASE WHEN ao.correct = true THEN 1 ELSE 0 END) AS correct_count
+FROM questions q
+JOIN categories c ON c.id = q.category_id
+LEFT JOIN answer_options ao ON ao.question_id = q.id
+GROUP BY q.id, q.text, q.difficulty, c.name
+HAVING COUNT(ao.id) <> 4
+   OR SUM(CASE WHEN ao.correct = true THEN 1 ELSE 0 END) <> 1
+ORDER BY q.id;
+```
+
+Expected result:
+
+```text
+No rows
+```
+
+This confirms that every question has exactly 4 answer options and exactly 1 correct answer.
+
+---
+
+## Production Deployment Notes
+
+### Backend on Render
+
+The backend is deployed on Render as a Docker web service.
+
+Recommended Render settings:
+
+```text
+Environment: Docker
+Root Directory: backend
+Dockerfile Path: Dockerfile
+```
+
+Required Render environment variables:
+
+```env
+DB_URL=jdbc:postgresql://your-supabase-host:5432/postgres?sslmode=require
+DB_USERNAME=postgres.your_supabase_project_ref
+DB_PASSWORD=your_supabase_database_password
+JWT_SECRET=your_long_jwt_secret
+JWT_EXPIRATION_MS=86400000
+FRONTEND_URL=https://blaugrana-quiz.vercel.app
+```
+
+The backend uses:
+
+```properties
+server.port=${PORT:8080}
+```
+
+so it can run correctly on Render's assigned port.
+
+---
+
+### Frontend on Vercel
+
+The frontend is deployed on Vercel.
+
+Recommended Vercel settings:
+
+```text
+Framework Preset: Vite
+Root Directory: frontend
+Build Command: npm run build
+Output Directory: dist
+```
+
+Required Vercel environment variable:
+
+```env
+VITE_API_BASE_URL=https://blaugranaquiz.onrender.com/api
+```
+
+---
+
+### Database on Supabase
+
+The production PostgreSQL database is hosted on Supabase.
+
+When using the Supabase session pooler with Spring Boot, the username usually has this format:
+
+```text
+postgres.your_project_ref
+```
+
+The backend connects using JDBC format:
+
+```text
+jdbc:postgresql://your-supabase-pooler-host:5432/postgres?sslmode=require
 ```
 
 ---
@@ -796,6 +1028,11 @@ Review score and explanations
 Save scores for logged-in users
 View personal score history
 View public leaderboards grouped by category and difficulty
+Dockerized backend
+Backend deployed on Render
+Frontend deployed on Vercel
+Production PostgreSQL database hosted on Supabase
+Production seed data script
 ```
 
 ---
@@ -831,15 +1068,14 @@ Possible score page improvements:
 - Filter personal scores by difficulty
 - Sort by newest, best score, or highest percentage
 
-### Deployment
+### Testing Improvements
 
-Future deployment improvements:
+Possible testing improvements:
 
-- Docker support
-- Backend deployment
-- Frontend deployment
-- Production database configuration
-- Production environment variables
+- Backend unit tests
+- Backend integration tests
+- Frontend component tests
+- End-to-end tests for the quiz flow
 
 ---
 
@@ -853,11 +1089,10 @@ Recommended next phases:
 3. Add admin question management UI
 4. Improve My Scores filtering and sorting
 5. Add user profile/statistics page
-6. Add Docker configuration
-7. Deploy backend
-8. Deploy frontend
-9. Configure production PostgreSQL database
-10. Add automated backend and frontend tests
+6. Add backend unit and integration tests
+7. Add frontend tests
+8. Add CI/CD pipeline
+9. Add custom domain
 ```
 
 ---
@@ -868,4 +1103,4 @@ Vladimir Gogovski
 
 GitHub: [Gogovski20](https://github.com/Gogovski20)
 
-LinkedIn: https://www.linkedin.com/in/vladimir-gogovski
+LinkedIn: [https://www.linkedin.com/in/vladimir-gogovski](https://www.linkedin.com/in/vladimir-gogovski)
