@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { submitQuiz } from "../api/quizApi";
 import Card from "../components/Card";
@@ -11,6 +11,7 @@ import type {
 } from "../types/quiz";
 import { getErrorMessage } from "../utils/errorUtils";
 import {
+  clearActiveQuizStorage,
   getSavedQuizQuestions,
   getSavedSelectedAnswers,
   saveQuizResult,
@@ -35,7 +36,14 @@ export default function QuizPage() {
   const [error, setError] = useState("");
 
   const answeredCount = Object.keys(selectedAnswers).length;
-  const allQuestionsAnswered = answeredCount === questions.length;
+  const allQuestionsAnswered =
+    questions.length > 0 && answeredCount === questions.length;
+
+  useEffect(() => {
+    if (questions.length === 0) {
+      navigate("/quiz/setup", { replace: true });
+    }
+  }, [questions.length, navigate]);
 
   function handleSelectAnswer(questionId: number, answerOptionId: number) {
     setSelectedAnswers((previous) => {
@@ -45,12 +53,17 @@ export default function QuizPage() {
       };
 
       saveSelectedAnswers(updatedAnswers);
+      setError("");
 
       return updatedAnswers;
     });
   }
 
   async function handleSubmitQuiz() {
+    if (submitting) {
+      return;
+    }
+
     if (questions.length === 0) {
       setError("No quiz questions found. Please start a new quiz.");
       return;
@@ -73,8 +86,10 @@ export default function QuizPage() {
       const response = await submitQuiz({ answers });
 
       saveQuizResult(response);
+      clearActiveQuizStorage();
 
       navigate("/results", {
+        replace: true,
         state: {
           result: response,
         },
@@ -137,6 +152,7 @@ export default function QuizPage() {
                       onChange={() =>
                         handleSelectAnswer(question.id, option.id)
                       }
+                      disabled={submitting}
                     />
                     <span>{option.text}</span>
                   </label>

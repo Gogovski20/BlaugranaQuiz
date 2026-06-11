@@ -67,6 +67,15 @@ export function getSavedSelectedAnswers(): Record<number, number> {
   }
 }
 
+export function clearActiveQuizStorage() {
+  localStorage.removeItem(QUIZ_QUESTIONS_KEY);
+  localStorage.removeItem(SELECTED_ANSWERS_KEY);
+}
+
+export function clearQuizResult() {
+  localStorage.removeItem(QUIZ_RESULT_KEY);
+}
+
 export function clearQuizStorage() {
   localStorage.removeItem(QUIZ_QUESTIONS_KEY);
   localStorage.removeItem(QUIZ_RESULT_KEY);
